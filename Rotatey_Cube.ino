@@ -58,10 +58,10 @@ double MMPI = 1000*M_PI;
 
 long int timeLast = -100, period = 1;
 // Overall scale and perspective distance
-uint8_t sZ = 4, scale = 16;
+uint8_t sZ = 4, scale = 12;
 // screen center
 uint8_t centerX = 64;
-uint8_t centerY = 32;
+uint8_t centerY = 40;
 
 // Initialize cube point arrays
 const int TOTAL_POINTS = 12;
@@ -180,13 +180,13 @@ void cubeloop() {
   mpu.getMotion6(&ax, &ay, &az, &gx, &gy, &gz);
 
   // ignore low values (supply uour own values here, based on Serial console output)
-  if(abs(gx)<10){
+  if(abs(gx)<=40){
     gx = 0;
   }
-  if(abs(gy)<30){
+  if(abs(gy)<=30){
     gy = 0;
   }
-  if(abs(gz)<12){
+  if(abs(gz)<=26){
     gz = 0;
   }
 
