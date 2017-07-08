@@ -64,24 +64,46 @@ uint8_t centerX = 64;
 uint8_t centerY = 32;
 
 // Initialize cube point arrays
-double C1[] = {  1,  1,  1 };
-double C2[] = {  1,  1, -1 };
-double C3[] = {  1, -1,  1 };
-double C4[] = {  1, -1, -1 };
-double C5[] = { -1,  1,  1 };
-double C6[] = { -1,  1, -1 };
-double C7[] = { -1, -1,  1 };
-double C8[] = { -1, -1, -1 };
+const int TOTAL_POINTS = 12;
+uint8_t P[TOTAL_POINTS][2];
+double C[TOTAL_POINTS][3] = {
+  // Cube
+  {   1,    1,    1 },
+  {   1,    1,   -1 },
+  {   1,   -1,    1 },
+  {   1,   -1,   -1 },
+  {  -1,    1,    1 },
+  {  -1,    1,   -1 },
+  {  -1,   -1,    1 },
+  {  -1,   -1,   -1 },
+  // Y
+  {   0,    0,    1 },
+  { 0.5,  0.5,    1 },
+  {-0.5,  0.5,    1 },
+  {   0, -0.5,    1 }
+};
 
-// Initialize cube points coords
-uint8_t P1[] = { 0, 0 };
-uint8_t P2[] = { 0, 0 };
-uint8_t P3[] = { 0, 0 };
-uint8_t P4[] = { 0, 0 };
-uint8_t P5[] = { 0, 0 };
-uint8_t P6[] = { 0, 0 };
-uint8_t P7[] = { 0, 0 };
-uint8_t P8[] = { 0, 0 };
+// Initialize array of point indexes to use them as lines ends
+const int TOTAL_LINES = 15;
+uint8_t LINES[TOTAL_LINES][2] = {
+                        // Cube
+                        {0, 1},
+                        {0, 2},
+                        {0, 4},
+                        {1, 3},
+                        {1, 5},
+                        {2, 3},
+                        {2, 6},
+                        {3, 7},
+                        {4, 5},
+                        {4, 6},
+                        {5, 7},
+                        {6, 7},
+                        // Y
+                        {8, 9},
+                        {8, 10},
+                        {8, 11}
+                      };
 
 U8GLIB_SH1106_128X64 u8g(U8G_I2C_OPT_NO_ACK);	// Display which does not send ACK
 MPU6050 mpu;
@@ -128,7 +150,12 @@ void setup() {
       mpu.setZGyroOffset(43);
       mpu.setZAccelOffset(1788); // 1688 factory default for my test chip
   }
-
+  
+  // Initialize cube points coords
+  for(int i=0;i<TOTAL_POINTS; i++){
+        P[i][0]=0;
+        P[i][1]=0;
+  } 
 }
 
 
@@ -185,29 +212,16 @@ void cubeloop() {
   #endif
 
   // calculate each point coords
-  P1[0] = centerX + scale/(1+C1[2]/sZ)*C1[0]; P1[1] = centerY + scale/(1+C1[2]/sZ)*C1[1];
-  P2[0] = centerX + scale/(1+C2[2]/sZ)*C2[0]; P2[1] = centerY + scale/(1+C2[2]/sZ)*C2[1];
-  P3[0] = centerX + scale/(1+C3[2]/sZ)*C3[0]; P3[1] = centerY + scale/(1+C3[2]/sZ)*C3[1];
-  P4[0] = centerX + scale/(1+C4[2]/sZ)*C4[0]; P4[1] = centerY + scale/(1+C4[2]/sZ)*C4[1];
-  P5[0] = centerX + scale/(1+C5[2]/sZ)*C5[0]; P5[1] = centerY + scale/(1+C5[2]/sZ)*C5[1];
-  P6[0] = centerX + scale/(1+C6[2]/sZ)*C6[0]; P6[1] = centerY + scale/(1+C6[2]/sZ)*C6[1];
-  P7[0] = centerX + scale/(1+C7[2]/sZ)*C7[0]; P7[1] = centerY + scale/(1+C7[2]/sZ)*C7[1];
-  P8[0] = centerX + scale/(1+C8[2]/sZ)*C8[0]; P8[1] = centerY + scale/(1+C8[2]/sZ)*C8[1];
-
-  // draw each cube edge
-  u8g.drawLine(P1[0], P1[1], P2[0], P2[1]); //1-2
-  u8g.drawLine(P1[0], P1[1], P3[0], P3[1]); //1-3
-  u8g.drawLine(P1[0], P1[1], P5[0], P5[1]); //1-5
-  u8g.drawLine(P2[0], P2[1], P4[0], P4[1]); //2-4
-  u8g.drawLine(P2[0], P2[1], P6[0], P6[1]); //2-6
-  u8g.drawLine(P3[0], P3[1], P4[0], P4[1]); //3-4
-  u8g.drawLine(P3[0], P3[1], P7[0], P7[1]); //3-7
-  u8g.drawLine(P4[0], P4[1], P8[0], P8[1]); //4-8
-  u8g.drawLine(P5[0], P5[1], P6[0], P6[1]); //5-6
-  u8g.drawLine(P5[0], P5[1], P7[0], P7[1]); //5-7
-  u8g.drawLine(P6[0], P6[1], P8[0], P8[1]); //6-8
-  u8g.drawLine(P7[0], P7[1], P8[0], P8[1]); //7-8
-
+  for(int i=0; i<TOTAL_POINTS; i++) {
+     P[i][0] = centerX + scale/(1+C[i][2]/sZ)*C[i][0];
+     P[i][1] = centerY + scale/(1+C[i][2]/sZ)*C[i][1];
+  }
+  
+  // draw each line
+  for(int i=0; i<TOTAL_LINES; i++){
+    u8g.drawLine(P[LINES[i][0]][0], P[LINES[i][0]][1], P[LINES[i][1]][0], P[LINES[i][1]][1]);
+  }
+ 
 }
 
 
@@ -219,7 +233,7 @@ void vectRotXYZ(double angle, int axe) {
     case 1: // X
       i1 = 1; // y
       i2 = 2; // z
-      m1 = -1;
+      m1 = 1;  // multiply by -1 to rotate sensor at 180 deg.
     break;
     case 2: // Y
       i1 = 0; // x
@@ -229,49 +243,16 @@ void vectRotXYZ(double angle, int axe) {
     case 3: // Z
       i1 = 0; // x
       i2 = 1; // y
-      m1 = 1;
+      m1 = -1; // multiply by -1 to rotate sensor at 180 deg.
     break;
   }
 
-  double t1 = C1[i1];
-  double t2 = C1[i2];
-  C1[i1] = t1*cos(angle)+(m1*t2)*sin(angle);
-  C1[i2] = (-m1*t1)*sin(angle)+t2*cos(angle);
+  for(int i=0; i<TOTAL_POINTS; i++) {
+    double t1 = C[i][i1];
+    double t2 = C[i][i2];
+    C[i][i1] = t1*cos(angle)+(m1*t2)*sin(angle);
+    C[i][i2] = (-m1*t1)*sin(angle)+t2*cos(angle);
+  }
   
-  t1 = C2[i1]; 
-  t2 = C2[i2];
-  C2[i1] = t1*cos(angle)+(m1*t2)*sin(angle);
-  C2[i2] = (-m1*t1)*sin(angle)+t2*cos(angle);
-
-  t1 = C3[i1]; 
-  t2 = C3[i2];
-  C3[i1] = t1*cos(angle)+(m1*t2)*sin(angle);
-  C3[i2] = (-m1*t1)*sin(angle)+t2*cos(angle);
-
-  t1 = C4[i1]; 
-  t2 = C4[i2];
-  C4[i1] = t1*cos(angle)+(m1*t2)*sin(angle);
-  C4[i2] = (-m1*t1)*sin(angle)+t2*cos(angle);
-
-  t1 = C5[i1]; 
-  t2 = C5[i2];
-  C5[i1] = t1*cos(angle)+(m1*t2)*sin(angle);
-  C5[i2] = (-m1*t1)*sin(angle)+t2*cos(angle);
-
-  t1 = C6[i1]; 
-  t2 = C6[i2];
-  C6[i1] = t1*cos(angle)+(m1*t2)*sin(angle);
-  C6[i2] = (-m1*t1)*sin(angle)+t2*cos(angle);
-
-  t1 = C7[i1]; 
-  t2 = C7[i2];
-  C7[i1] = t1*cos(angle)+(m1*t2)*sin(angle);
-  C7[i2] = (-m1*t1)*sin(angle)+t2*cos(angle);
-
-  t1 = C8[i1]; 
-  t2 = C8[i2];
-  C8[i1] = t1*cos(angle)+(m1*t2)*sin(angle);
-  C8[i2] = (-m1*t1)*sin(angle)+t2*cos(angle);
-
 }
 
