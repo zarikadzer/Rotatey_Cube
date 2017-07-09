@@ -64,27 +64,38 @@ uint8_t centerX = 64;
 uint8_t centerY = 40;
 
 // Initialize cube point arrays
-const int TOTAL_POINTS = 12;
+const int TOTAL_POINTS = 20;
 uint8_t P[TOTAL_POINTS][2];
-double C[TOTAL_POINTS][3] = {
+double C[TOTAL_POINTS][4] = {
   // Cube
-  {   1,    1,    1 },
+  //  X     Y     Z  
+  {   1,    1,    1 }, //0
   {   1,    1,   -1 },
   {   1,   -1,    1 },
   {   1,   -1,   -1 },
   {  -1,    1,    1 },
   {  -1,    1,   -1 },
   {  -1,   -1,    1 },
-  {  -1,   -1,   -1 },
+  {  -1,   -1,   -1 }, //7
   // Y
-  {   0,    0,    1 },
+  {   0,    0,    1 }, //8
   { 0.5,  0.5,    1 },
   {-0.5,  0.5,    1 },
-  {   0, -0.5,    1 }
+  {   0, -0.5,    1 }, //11
+  // Z
+  { 0.5,    1,  0.5 }, //12
+  { 0.5,    1, -0.5 }, 
+  {-0.5,    1,  0.5 }, 
+  {-0.5,    1, -0.5 }, //15
+  // X
+  {   1,  0.5,  0.5 }, //16
+  {   1, -0.5, -0.5 },
+  {   1,  0.5, -0.5 },
+  {   1, -0.5,  0.5 }, //19
 };
 
 // Initialize array of point indexes to use them as lines ends
-const int TOTAL_LINES = 15;
+const int TOTAL_LINES = 20;
 uint8_t LINES[TOTAL_LINES][2] = {
                         // Cube
                         {0, 1},
@@ -102,7 +113,14 @@ uint8_t LINES[TOTAL_LINES][2] = {
                         // Y
                         {8, 9},
                         {8, 10},
-                        {8, 11}
+                        {8, 11},
+                        // Z
+                        {12, 13},
+                        {13, 14},
+                        {14, 15},
+                        // X
+                        { 16, 17 },
+                        { 18, 19 },
                       };
 
 U8GLIB_SH1106_128X64 u8g(U8G_I2C_OPT_NO_ACK);	// Display which does not send ACK
@@ -163,8 +181,7 @@ void loop() {
   u8g.firstPage();  
   do {
     cubeloop();
-  } 
-  while( u8g.nextPage() );  
+  } while( u8g.nextPage() );  
 }
 
 
@@ -219,7 +236,13 @@ void cubeloop() {
   
   // draw each line
   for(int i=0; i<TOTAL_LINES; i++){
-    u8g.drawLine(P[LINES[i][0]][0], P[LINES[i][0]][1], P[LINES[i][1]][0], P[LINES[i][1]][1]);
+      uint8_t P1_index = LINES[i][0];
+      uint8_t P2_index = LINES[i][1];
+
+    // draw only visible
+    if (C[P1_index][2] < 0.2 && C[P2_index][2] < 0.2) {
+        u8g.drawLine(P[P1_index][0], P[P1_index][1], P[P2_index][0], P[P2_index][1]);
+    }    
   }
  
 }
